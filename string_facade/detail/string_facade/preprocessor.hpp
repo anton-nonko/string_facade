@@ -9,7 +9,7 @@
 
 #define DETAIL_STRING_FACADE_PARAM_None                0
 #define DETAIL_STRING_FACADE_PARAM_CategoryOrTraversal 1
-#define DETAIL_STRING_FACADE_PARAM_Flags               2
+#define DETAIL_STRING_FACADE_PARAM_Hints               2
 #define DETAIL_STRING_FACADE_PARAM_Iterator            3
 #define DETAIL_STRING_FACADE_PARAM_ConstIterator       4
 #define DETAIL_STRING_FACADE_PARAM_Char                5
