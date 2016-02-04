@@ -54,4 +54,51 @@
     DETAIL_STRING_FACADE_PARAM_TYPEDEF, _, STRING_FACADE_PARAMS\
   )
 
+enum {
+  string_facade_none      = 0,
+  string_facade_finite    = 1, /// @todo Write documentation.
+  string_facade_null_term = 2, /// @todo Write documentation.
+  string_facade_array     = 4  /// @todo Write documentation.
+};
+
+namespace detail {
+namespace string_facade {
+
+template<class Facade, bool IsConst, STRING_FACADE_PARAMS_DECLARE()>
+class iterator;
+
+}; //string_facade
+}; //detail
+
+template<class Derived, STRING_FACADE_PARAMS_DECLARE()> class string_facade;
+
+class string_core_access {
+#ifdef BOOST_NO_MEMBER_TEMPLATE_FRIENDS
+public:
+#else
+  template<class Facade, bool IsConst, STRING_FACADE_PARAMS_DECLARE()>
+  friend class detail::string_facade::iterator;
+
+  template<class Derived, STRING_FACADE_PARAMS_DECLARE()>
+  friend class string_facade;
+#endif
+
+  template<class Facade, class Iterator>
+  static Iterator begin(Facade& facade) {return facade.begin_impl();};
+
+  template<class Facade, class Iterator>
+  static Iterator cbegin(Facade const& facade) {return facade.cbegin_impl();};
+
+  template<class Facade, class Iterator>
+  static Iterator end(Facade& facade) {return facade.end_impl();};
+
+  template<class Facade, class Iterator>
+  static Iterator cend(Facade const& facade) {return facade.cend_impl();};
+
+  template<class Facade, class Iterator>
+  static bool is_end(Iterator const& iterator) {
+    return Facade::is_end_impl(iterator);
+  };
+}; //string_core_access
+
 #endif // !defined HAE179185_96C7_4CDC_BC9B_187E8DA29993
