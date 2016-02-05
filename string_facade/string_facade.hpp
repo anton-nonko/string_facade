@@ -5,12 +5,39 @@
 #ifndef HC5CF469A_FFC8_4BDE_8427_295641A99740
 #define HC5CF469A_FFC8_4BDE_8427_295641A99740
 
+#include <cstring>
+
+#include <boost/call_traits.hpp>
 #include <boost/iterator/reverse_iterator.hpp>
+
 #include "string_facade_fwd.hpp"
 #include "detail/string_facade/iterator.hpp"
 
+template<class Char, class CharTraits>
+struct string_traits;
+
+template<class CharTraits>
+struct string_traits<char, CharTraits> {
+  typedef typename CharTraits::char_type char_type;
+
+  static int c_compare(char_type const* s, char_type const* p) BOOST_NOEXCEPT {
+    return ::std::strcmp(s, p);
+  };
+}; //string_traits<char, CharTraits>
+
+template<class CharTraits>
+struct string_traits<wchar_t, CharTraits> {
+  typedef typename CharTraits::char_type char_type;
+
+  static int c_compare(char_type const* s, char_type const* p) BOOST_NOEXCEPT {
+    return ::std::wcscmp(s, p);
+  };
+}; //string_traits<wchar_t, CharTraits>
+
 template<class Derived, STRING_FACADE_PARAMS_DECLARE_WITH_DEFAULTS()>
 class string_facade {
+  typedef string_facade<Derived, STRING_FACADE_PARAMS_PASS()> this_type;
+
   typedef ::boost::mpl::true_  true_;
   typedef ::boost::mpl::false_ false_;
 
@@ -32,6 +59,11 @@ class string_facade {
 
   Derived& derived() {return *static_cast<Derived*>(this);};
   Derived const& derived() const {return *static_cast<Derived const*>(this);};
+
+  typedef string_traits<Char, CharTraits> traits;
+
+  ///@todo Provide hint to allow passing #this_type by value.
+  typedef typename ::boost::call_traits<this_type>::param_type param;
 
 public:
   STRING_FACADE_PARAMS_TYPEDEF()
@@ -164,13 +196,13 @@ public:
   };
 
   ///@todo Write documentation.
-  const_pointer data() const {
+  Char const* data() const {
     BOOST_STATIC_ASSERT(is_array::value);
     return &*begin();
   };
 
   ///@todo Write documentation.
-  const_pointer c_str() const {
+  Char const* c_str() const {
     BOOST_STATIC_ASSERT(is_array::value && is_null_term::value);
     return data();
   };
@@ -183,6 +215,52 @@ public:
 
   ///@todo Write documentation.
   size_type length() const {return size();};
+
+  ///@todo Write documentation.
+  int compare(param other) const {
+    BOOST_STATIC_ASSERT(is_random_access::value && is_finite::value);
+    size_type s = ::std::min(size(), other.size());
+    if(int result = traits_type::compare(data(), other.data(), s))
+      return result;
+    if(size() < other.size()) return -1;
+    if(size() > other.size()) return +1;
+    return 0;
+  };
+
+  ///@todo Write documentation.
+  int compare(Char const* other) const {
+    BOOST_STATIC_ASSERT(is_array::value && is_null_term::value);
+    return traits::c_compare(c_str(), other);
+  };
+
+  ///@todo Write documentation.
+  template<class T, class A>
+  int compare(::std::basic_string<Char, T, A> const& other) const {
+    BOOST_STATIC_ASSERT(is_array::value && is_null_term::value);
+    return compare(other.c_str());
+  };
+
+#define DETAIL_STRING_FACADE_CMP_OTOR(O)\
+  friend bool operator O (param s, param t) {\
+    return s.derived().compare(t) O 0;\
+  };\
+  \
+  template<class T>\
+  friend bool operator O (param s, T const& t) {\
+    return s.derived().compare(t) O 0;\
+  };\
+  \
+  template<class T>\
+  friend bool operator O (T const& t, param s) {\
+    return -s.derived().compare(t) O 0;\
+  };
+
+  DETAIL_STRING_FACADE_CMP_OTOR(==)
+  DETAIL_STRING_FACADE_CMP_OTOR(!=)
+  DETAIL_STRING_FACADE_CMP_OTOR(< )
+  DETAIL_STRING_FACADE_CMP_OTOR(> )
+  DETAIL_STRING_FACADE_CMP_OTOR(<=)
+  DETAIL_STRING_FACADE_CMP_OTOR(>=)
 }; //string_facade
 
 #endif // !defined HC5CF469A_FFC8_4BDE_8427_295641A99740
