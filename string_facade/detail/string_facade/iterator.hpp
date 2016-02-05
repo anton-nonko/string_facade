@@ -82,7 +82,7 @@ private:
   void advance(Difference difference) {m_impl += difference;};
 
   Difference distance_to(this_type const& other) const {
-    return m_impl - other.m_impl;
+    return other.m_impl - m_impl;
   };
 
   bool equal(this_type const& other) const {
