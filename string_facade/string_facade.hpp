@@ -34,6 +34,8 @@ class string_facade {
   Derived const& derived() const {return *static_cast<Derived const*>(this);};
 
 public:
+  STRING_FACADE_PARAMS_TYPEDEF()
+
   ///@todo Write documentation.
   typedef
     detail::string_facade::iterator<Derived, false, STRING_FACADE_PARAMS_PASS()>
@@ -129,6 +131,58 @@ public:
     return cbegin();
   };
 
+  ///@todo Write documentation.
+  reference at(size_type pos) {
+    BOOST_STATIC_ASSERT(is_random_access::value && is_finite::value);
+
+    if(BOOST_UNLIKELY(pos >= size()))
+      throw std::out_of_range(""); ///@todo Provide appropriate message.
+
+    return begin()[pos];
+  };
+
+  ///@todo Write documentation.
+  const_reference at(size_type pos) const {
+    BOOST_STATIC_ASSERT(is_random_access::value && is_finite::value);
+
+    if(BOOST_UNLIKELY(pos >= size()))
+      throw std::out_of_range(""); ///@todo Provide appropriate message.
+
+    return begin()[pos];
+  };
+
+  ///@todo Write documentation.
+  reference operator [] (size_type pos) {
+    BOOST_STATIC_ASSERT(is_random_access::value);
+    return begin()[pos];
+  };
+
+  ///@todo Write documentation.
+  const_reference operator [] (size_type pos) const {
+    BOOST_STATIC_ASSERT(is_random_access::value);
+    return begin()[pos];
+  };
+
+  ///@todo Write documentation.
+  const_pointer data() const {
+    BOOST_STATIC_ASSERT(is_array::value);
+    return &*begin();
+  };
+
+  ///@todo Write documentation.
+  const_pointer c_str() const {
+    BOOST_STATIC_ASSERT(is_array::value && is_null_term::value);
+    return data();
+  };
+
+  ///@todo Write documentation.
+  size_type size() const {
+    BOOST_STATIC_ASSERT(is_random_access::value && is_finite::value);
+    return end() - begin();
+  };
+
+  ///@todo Write documentation.
+  size_type length() const {return size();};
 }; //string_facade
 
 #endif // !defined HC5CF469A_FFC8_4BDE_8427_295641A99740
